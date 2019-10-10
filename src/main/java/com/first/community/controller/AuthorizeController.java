@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Chiayhon
  * @create 2019 - 10 - 10
@@ -29,7 +31,8 @@ public class AuthorizeController {
 
     @RequestMapping("/callback")
     public String callBack(@RequestParam(name = "code") String code,
-                           @RequestParam(name = "state") String state){
+                           @RequestParam(name = "state") String state,
+                           HttpServletRequest request){
         AccessDTO accessDTO = new AccessDTO();
         accessDTO.setClient_id(ClientId);
         accessDTO.setClient_secret(ClientSecret);
@@ -38,7 +41,14 @@ public class AuthorizeController {
         accessDTO.setState(state);
         String accessToken = gitHubProvider.getAccessToken(accessDTO);
         GithubUser user = gitHubProvider.getUser(accessToken);
-        System.out.println(user.getName());
-        return "Index";
+        if(user != null){
+            //登陆成功
+            request.getSession().setAttribute("user", user);
+            return "redirect:/";
+        }else {
+            //登录失败
+            return "redirect:/";
+        }
+
     }
 }
